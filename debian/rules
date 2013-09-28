@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+override_dh_auto_install:
+	install -m 755 -d debian/haggis-stats/usr/bin
+	install -m 755 src/stats.pl debian/haggis-stats/usr/bin/haggis-stats
+	install -m 755 -d debian/haggis-stats/usr/man/man1
+	install -m 644 man/stats.1 debian/haggis-stats/usr/man/man1/haggis-stats.1
+	gzip debian/haggis-stats/usr/man/man1/haggis-stats.1
+
+%:
+	dh $@

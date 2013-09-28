@@ -1,0 +1,24 @@
+Source: stats
+Section: utils
+Priority: optional
+Maintainer: xorangekiller <xorangekiller@gmail.com>
+Build-Depends: debhelper (>= 9), gzip
+Standards-Version: 3.9.4
+Homepage: http://www.neowin.net/forum/topic/1119502-linux-system-stats-script/
+#Vcs-Git: git://git.debian.org/collab-maint/stats.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/stats.git;a=summary
+
+Package: haggis-stats
+Architecture: all
+Depends: ${perl:Depends},
+         lsb-release, coreutils, procps
+Recommends: x11-xserver-utils | x11-utils,
+            graphicsmagick-imagemagick-compat
+Suggests: scrot
+Description: Print basic system statistics and screenshot the results
+ Stats is a simple script to print basic system statistics and immortalize
+ those results with a screenshot. It was written with typical end-user desktop
+ installations in mind, but a limited subset of the functionality afforded to
+ those systems is provided on headless machines. This script will automatically
+ detect the functionality available and print the associated system information
+ accordingly, or fail gracefully if it cannot.
