@@ -1,0 +1,25 @@
+Stats NEWS
+
+* Noteworthy changes in release 2.0.0 (2013-09-27) [stable]
+
+** Rewrite in Perl
+  
+  Prior to this release Stats was written in BASH. There was nothing wrong with
+  this per-se, but as the capabilities of this script evolved I felt that a
+  stronger scripting language was necessary. I chose Perl because this Stats
+  script inherently does extensive data processing, which is a use case Perl
+  is extremely well suited for. Perl is also fairly lightweight, installed on
+  the vast majority of GNU/Linux systems, and I really like it.
+
+** New Documentation
+  
+  Prior to this release there was no official documentation shipped with this
+  script. As of this release there is some semblance of the documentation
+  typically shipped with more established open-source projects. The README
+  explains the purpose of this project to some extent, the INSTALL document
+  contains some basic information for running this script on various Linux
+  distributions, and the ChangeLog now offers some limited visibility into
+  changes effected between releases from this point forward. This documentation
+  is somewhat minimal and will probably improve in coming releases, but its
+  mere existence in this release represents a major improvement in
+  documentation.

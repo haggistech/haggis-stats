@@ -1,0 +1,25 @@
+  Copyright (C) 2013 Haggis.
+  Copyright (C) 2013 xorangekiller.
+
+  Copying and distribution of this file, with or without modification, are
+  permitted in any medium without royalty provided the copyright notice and
+  this notice are preserved.
+
+Stats is provided "as is" with no warranty. The exact terms under which you may
+use and (re)distribute this program are detailed in the BSD 3-Clause License,
+in the file COPYING.
+
+Stats is a simple script to print basic system statistics and immortalize those
+results with a screenshot on GNU/Linux systems. The most popular Linux
+distributions are officially supported by this script, although any reasonable,
+modern GNU/Linux system should have no problem running it. It with typical
+end-user desktop installations in mind, but a limited subset of the
+functionality afforded to those systems is provided on headless machines. This
+script will automatically detect the functionality available and print the
+associated system information accordingly, or fail gracefully if it cannot.
+
+See the file AUTHORS for a list of authors and other contributors.
+
+See the file INSTALL for dependency information and installation instructions.
+
+See the file NEWS for a description of major changes in this release.

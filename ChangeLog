@@ -1,0 +1,14 @@
+2013-09-27  xorangekiller  <xorangekiller@gmail.com>
+
+    Version 2.0.0
+    * Complete rewrite in Perl
+    * New Feature: Command line switches
+    * New Feature: Diagnostic report generation
+    * New Feature: RHEL, CentOS, Arch, and openSUSE support
+    * Bugfix: lsb_release is no longer strictly required
+    * Bugfix: Improved support for headless systems
+    * New File: ChangeLog and NEWS
+    * New File: README
+    * New File: INSTALL
+    * New File: AUTHORS
+    * New File: Stats man page

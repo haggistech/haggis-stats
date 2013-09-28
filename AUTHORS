@@ -1,0 +1,31 @@
+  Copyright (C) 2013 Haggis.
+  Copyright (C) 2013 xorangekiller.
+
+  Copying and distribution of this file, with or without modification, are
+  permitted in any medium without royalty provided the copyright notice and
+  this notice are preserved.
+
+Haggis started writing a basic script in November 2012 to gather statistics on
+his Fedora installation and display them on screen as an exercise to learn
+BASH. Shortly thereafter he posted the initial version in the
+Linux Discussion & Support sub-forum on Neowin.net to get feedback from other
+members. Encouraged by the initial, positive feedback Haggis decided to
+continue the project by adding new features and extending support to other
+Linux distributions beyond Fedora. The script consistently improved through the
+end of the year and into the next thanks to Haggis' hard work, continued
+testing by other Neowin members, and patches submitted by a handful of
+individuals.
+
+In September 2013 the script had grown to the point that Neowin member
+xorangekiller, who was one of the original testers and patch submitters,
+decided to initiate a rewrite in Perl. This rewrite added extensive new
+features suggested by Haggis and others since the inception of the original
+BASH script while retaining the functional capabilities of that script by
+reusing many of the established data processing techniques employed therein
+verbatim. Documentation was also a major focus of this rewrite, with a change
+log, read me, installation guide, and other documentation typical of
+established open-source projects supplementing the virtually nonexistent
+documentation of the previous release. Due to the extensive and invasive nature
+of this update the first release after the Perl rewrite was designated 2.0.
+Despite the work done by xorangekiller on this release, Haggis remained the
+primary maintainer.

@@ -1,0 +1,79 @@
+Installation Instructions
+*************************
+
+Copyright (C) 2013 Haggis.
+Copyright (C) 2013 xorangekiller.
+
+   Copying and distribution of this file, with or without modification, are
+permitted in any medium without royalty provided the copyright notice and this
+notice are preserved.
+
+Supported Operating Systems
+===========================
+
+    Although this script could be modified to support a wide variety of
+reasonably POSIX-compliant operating systems, the support load in that scenario
+would be enormous. Therefore Stats only supports GNU/Linux systems. Even so,
+there is some disparity between the setups employed by various Linux
+distributions. To limit the scope of this variation somewhat this script
+officially targets systems with the Linux Standard Base, which encompasses
+virtually every modern Linux distribution. Therefore the hard requirements of
+this script are a GNU/Linux operating system configured with the Linux Standard
+Base and Perl 5.10 or later.
+
+    The hard requirements listed above represent the bare minimum required to
+run this script, but there are a few Linux distributions which have explicit
+support in Stats. They are listed below along with the oldest supported
+release.
+    * Red Hat Enterprise Linux  >= 6.0
+    * CentOS                    >= 6.0
+    * Fedora                    >= 15
+    * Debian                    >= 6.0
+    * Ubuntu                    >= 12.04.0
+    * Linux Mint                >= 13
+    * Arch Linux
+    * openSUSE                  >= 12.3
+
+Dependencies
+============
+
+    Perl 5.10 is the most critical dependency of this script. Since that is
+quite an old version it is not much of a problem today. Many important utility
+scripts are written in Perl so it is installed by default by virtually every
+Linux distribution, including some targeted at embedded devices. Realistically
+the version is the only major stipulation, which is the reason RHEL 5.x and
+Debian 5.x are not supported.
+
+    The basic Perl installation is enough to satisfy the language dependency
+on most distributions, but additional Perl modules are required on some
+distributions. The aforementioned distributions are listed below along with the
+commands necessary to install the additional language dependencies.
+    * Fedora            yum install perl-Switch
+    * Arch Linux        pacman -S perl-switch
+    * openSUSE          zypper install perl-Switch
+
+    As mentioned in the "Supported Operating Systems" section above, the
+Linux Standard Base is also a requirement. The script will technically "run"
+without this, but it will politely die before accomplishing anything remotely
+useful. Fortunately this is installed by default on virtually every modern
+Linux distribution and therefore not much of an issue. I mention this
+dependency explicitly because it is probably a good idea to depend on lsb-base
+and lsb-release if you are packaging Stats for your distribution.
+
+Installation
+============
+
+   By-and-large Stats does not need to be installed. It does not require
+elevated privileges so you can run it from anywhere you like as a normal user.
+However if it has not been packaged for your distribution and you would like to
+install it for all users, you can do so by issuing the following command as
+root (which typically entails prefixing the command with "sudo" or "su -c")
+from the top-level directory of the Stats source tree.
+    # install -m 755 ./src/stats.pl /usr/local/bin/haggis-stats
+
+    If you choose to manually install Stats for all users you may also wish to
+install its man page. You can do so by issuing the following commands as root
+after you have installed the script itself.
+    # install -m 755 -d /usr/local/man/man1
+    # install -m 644 ./man/stats.1 /usr/local/man/man1/haggis-stats.1
+    # gzip /usr/local/man/man1/haggis-stats.1
