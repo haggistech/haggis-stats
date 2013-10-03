@@ -1216,7 +1216,13 @@ sub print_stats
     print colored ("Load Average:", "bold $color") . "                " . $load->{five} . "\n";
     print colored ("Top Process (by memory use):", "bold $color") . " " . $top . "\n\n" if ($top);
     
-    return $color;
+    # The easiest way to determine if we are running in a graphical environment
+    # without duplicating effort is based on the screen resolution.
+    # get_screen_resolution() will set both coordinates to zero if something
+    # goes wrong, but just to be safe we will return FALSE (we are not running
+    # in a graphical environment) if either is zero.
+    return 0 if ($res->{x} == 0 or $res->{y} == 0);
+    return 1;
 }
 
 # Take a screenshot and save it in the user's home directory.
@@ -1325,10 +1331,11 @@ elsif ($p_report)
 elsif ($p_stats)
 {
     my $color = 'black'; # Primary color of distro's logo
+    my $is_graphical; # Is X running in the current context?
     
     $color = print_logo () if ($p_logo == 1);
-    print_stats ($color);
-    print_screenshot ($color) if ($p_screenshot == 1);
+    $is_graphical = print_stats ($color);
+    print_screenshot ($color) if ($p_screenshot == 1 and $is_graphical == 1);
 }
 
 exit 0;
