@@ -1395,7 +1395,8 @@ elsif ($p_stats)
     my $color = 'black'; # Primary color of distro's logo
     my $is_graphical; # Is X running in the current context?
     
-    $color = print_logo () if ($p_logo == 1);
+    if ($p_logo == 1) { $color = print_logo (); }
+    else { print "\n"; }
     $is_graphical = print_stats ($color);
     print_screenshot ($p_output_directory, $color) if ($p_screenshot == 1 and $is_graphical == 1);
 }
