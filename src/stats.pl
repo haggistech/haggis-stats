@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
 # Haggis Tech Linux Stats Script
-# Version:  2.0.0
-# Released: 27 September 2013
+# Version:  2.1.0
+# Released: 03 October 2013
 #
 # Copyright (c) 2012-2013, Haggis
 # Copyright (c) 2013, xorangekiller
@@ -44,7 +44,7 @@ use Term::ANSIColor;
 ###############################################################################
 
 use constant STATS_NAME         => 'Haggis Stats';
-use constant STATS_VERSION      => '2.0.0';
+use constant STATS_VERSION      => '2.1.0';
 use constant STATS_COPYRIGHT    => 'Copyright (c) 2012-2013 Haggis';
 use constant STATS_LICENSE      => 'BSD 3-Clause';
 

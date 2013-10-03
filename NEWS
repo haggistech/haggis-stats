@@ -1,5 +1,24 @@
 Stats NEWS
 
+* Noteworthy changes in release 2.1.0 (2013-10-03) [stable]
+
+** Defaulted screenshot utility to scrot
+  
+  Stats 1.x releases with screenshot support relied on ImageMagick's import
+  utility exclusively to capture images of the contents of the screen.
+  Stats 2.0 used the same utility in the interest of maintaining the behavior
+  of earlier releases. However, import has a flaw that sometimes results in
+  black areas of a screenshot when a compositor is in use. In the best case
+  this is annoying, but in most cases it completely ruins the screenshot.
+  
+  Therefore to correct this problem, this release of Stats has support for
+  another popular screenshot utility - scrot - which is now default. Since
+  scrot is well-maintained and does not suffer from the same flaw as import,
+  it is a drop-in replacement in most cases. However to make sure that this
+  change does not result in a functional regression on systems where import
+  is available but scrot is not, import will be automatically employed if
+  scrot is not available on the target system; scrot is merely preferred.
+
 * Noteworthy changes in release 2.0.0 (2013-09-27) [stable]
 
 ** Rewrite in Perl
