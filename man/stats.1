@@ -41,6 +41,11 @@ Don't take a screenshot after printing system statistics. This option has no aff
 .IP \fB--no-logo\fR
 Don't print the logo for your distribution. This option has no affect if not used in conjunction with the \fBstats\fR \fIACTION\fR.
 
+.IP \fB--output-dir\fR\ \fIOUTPUT_DIRECTORY\fR
+Save the screenshot, diagnostic report, or other output to \fIOUTPUT_DIRECTORY\fR.
+
+The specified directory must exist and must be writable by the user running this program. This option has no affect if not used in conjunction with the \fBstats\fR or \fBreport\fR \fIACTION\fR, although that limitation may be lifted in future versions of this program. Any files generated for user consumption (i.e. not temporary) may be written to \fIOUTPUT_DIRECTORY\fR.
+
 .SH AUTHOR
 This manual was written by xorangekiller <xorangekiller@gmail.com>.
 

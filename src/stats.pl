@@ -1053,6 +1053,7 @@ Actions:
 Options:
     --no-screenshot     Don't take a screenshot after printing system statistics
     --no-logo           Don't print the logo for your distribution
+    --output-dir DIR    Save the screenshot or report to DIR
 
 HELP
 }
@@ -1070,6 +1071,7 @@ sub print_report
 {
     use POSIX qw(strftime);
     
+    my $output_directory = shift or die 'Internal Error: ' . __LINE__ . "\n"; # Directory to which the report should be saved
     my $report_file; # File name for the output file
     my @report_actions; # File and programs to write to $report_file
     
@@ -1093,7 +1095,7 @@ sub print_report
     push (@report_actions, {type => 'file', file => PROC_CPUINFO});
     push (@report_actions, {type => 'directory', directory => '/etc', regex => '\w+-release'});
     
-    $report_file = $ENV{PWD} . '/' . 'stats_report_' . $ENV{USER} . '_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.log';
+    $report_file = $output_directory . '/' . 'stats_report_' . $ENV{USER} . '_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.log';
     open (REPORT_HANDLE, '>', $report_file) or die $report_file . ": $!\n";
     
     print REPORT_HANDLE STATS_NAME . ' ' . STATS_VERSION . "\n";
@@ -1225,9 +1227,10 @@ sub print_stats
     return 1;
 }
 
-# Take a screenshot and save it in the user's home directory.
+# Take a screenshot and save it in the specified directory.
 sub print_screenshot
 {
+    my $output_directory = shift or die 'Internal Error: ' . __LINE__ . "\n"; # Directory to which the screenshot should be saved
     my $color = shift; # Optional identifier color
     my $screenshot_cmd; # Command to take the screenshot
     my $screenshot_file; # File the screenshot will be written to
@@ -1250,7 +1253,7 @@ sub print_screenshot
     {
         use POSIX qw(strftime);
         
-        $screenshot_file = $ENV{PWD} . '/' . 'screenshot_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.png';
+        $screenshot_file = $output_directory . '/' . 'screenshot_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.png';
         
         print 'Screenshot being taken..... ' . ($color ? colored ('Smile!!', "bold $color") : 'Smile!!') . "\n";
         sleep (2); # Give the X server time to flush its buffers before the screenshot is taken.
@@ -1282,6 +1285,7 @@ my $p_version = 0;
 # Options
 my $p_screenshot = 1;
 my $p_logo = 1;
+my $p_output_directory = $ENV{PWD};
 
 # Parse our command-line arguments.
 if ($#ARGV >= 1)
@@ -1290,11 +1294,39 @@ if ($#ARGV >= 1)
     {
         switch ($_ = shift)
         {
-            case '--no-screenshot' { $p_screenshot = 0; }
-            case '--no-logo' { $p_logo = 0; }
-            else { die "Invalid OPTION: $_\n"; }
+            case '--no-screenshot'
+            {
+                $p_screenshot = 0;
+            }
+            case '--no-logo'
+            {
+                $p_logo = 0;
+            }
+            case /^--output-dir(=.+){0,1}$/
+            {
+                if (/--output-dir=/) { $p_output_directory = (/--output-dir=(.+)/)[0]; }
+                else { $p_output_directory = shift; }
+                
+                # Workaround: Since "~" is so commonly used to reference one's
+                # home directory, accept it by translating it into the HOME
+                # environment variable.
+                if ($p_output_directory =~ /^~/)
+                {
+                    $p_output_directory = ($p_output_directory =~ /^~(.*)/)[0];
+                    $p_output_directory = $ENV{HOME} . $p_output_directory;
+                }
+                
+                unless ($p_output_directory and -d $p_output_directory)
+                {
+                    die die "Invalid OUTPUT_DIRECTORY: $p_output_directory\n";
+                }
+            }
+            else
+            {
+                die "Invalid OPTION: $_\n";
+            }
         }
-    };
+    }
 }
 if ($#ARGV >= 0)
 {
@@ -1326,7 +1358,7 @@ elsif ($p_version)
 }
 elsif ($p_report)
 {
-    print_report ();
+    print_report ($p_output_directory);
 }
 elsif ($p_stats)
 {
@@ -1335,7 +1367,7 @@ elsif ($p_stats)
     
     $color = print_logo () if ($p_logo == 1);
     $is_graphical = print_stats ($color);
-    print_screenshot ($color) if ($p_screenshot == 1 and $is_graphical == 1);
+    print_screenshot ($p_output_directory, $color) if ($p_screenshot == 1 and $is_graphical == 1);
 }
 
 exit 0;
