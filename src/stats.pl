@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
 # Haggis Tech Linux Stats Script
-# Version:  2.0.0
-# Released: 27 September 2013
+# Version:  2.1.0
+# Released: 03 October 2013
 #
 # Copyright (c) 2012-2013, Haggis
 # Copyright (c) 2013, xorangekiller
@@ -44,7 +44,7 @@ use Term::ANSIColor;
 ###############################################################################
 
 use constant STATS_NAME         => 'Haggis Stats';
-use constant STATS_VERSION      => '2.0.0';
+use constant STATS_VERSION      => '2.1.0';
 use constant STATS_COPYRIGHT    => 'Copyright (c) 2012-2013 Haggis';
 use constant STATS_LICENSE      => 'BSD 3-Clause';
 
@@ -195,7 +195,7 @@ sub get_distro
                 # white-list the distros we know about. This regular expression
                 # probes for the subset of the distros print_logo() understands
                 # and we can reasonably reliably probe for.
-                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Arch|SUSE|SLED|SLES)/i)[0])
+                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES)/i)[0])
                 {
                     $distro = $tmp;
                     last;
@@ -918,6 +918,35 @@ MINT_LOGO
     return 'bright_green';
 }
 
+# Print the Elementary OS logo and return its primary color.
+sub print_elementary_logo
+{
+    print color 'white';
+    print <<'ELEMENTARY_LOGO';
+
+              .lOXWMMWXOl.
+          .lONMMWX0000XWMMNOl.
+        cXMM0l,:oOXWWNKxc,l0MMXc
+      :NMNl..dWMKo,..,oNMX. .lNMN:
+     OMWl  oWMK'       .NMN    lWMO
+    0MW'  0MMk          OMM.    'WM0
+   lMM:  kMMO          .WMO      dMMl
+   NMX  .MMM.         ;WM0      lMMMN
+   MMO  'MMW        .OMWo     .0MMWMM
+   NMX   NMM;     ;0MWx.    .xMMK.XMN
+   lMM:  ,WMWc.cOWMXl     ;OMMK; :MMl
+    0MW;';kMMMMMM0; ..,l0WMMO,  ,WM0
+     OMMMMMNOkNMMMMMMMMMXx:    oMMO
+      :NMMd.   .';:::,.     .lNMN:
+        :KMMKo,.        .,oKMMK:
+          .ckNMMWXK00KXWMMNkc.
+              .lkXWMMWXkl.
+
+ELEMENTARY_LOGO
+    print color 'reset';
+    return 'white';
+}
+
 # Print the Arch Linux logo and return its primary color.
 sub print_arch_logo
 {
@@ -1019,14 +1048,15 @@ sub print_logo
 {
     switch (get_distro ())
     {
-        case /Red\sHat|RHEL/    { return print_rhel_logo (); }
-        case 'CentOS'           { return print_centos_logo (); }
-        case 'Fedora'           { return print_fedora_logo (); }
-        case 'Debian'           { return print_debian_logo (); }
-        case 'Ubuntu'           { return print_ubuntu_logo (); }
-        case 'LinuxMint'        { return print_mint_logo (); }
-        case 'Arch'             { return print_arch_logo (); }
-        case /SUSE|SLES|SLED/   { return print_suse_logo (); }
+        case /Red\sHat|RHEL/i   { return print_rhel_logo (); }
+        case /CentOS/i          { return print_centos_logo (); }
+        case /Fedora/i          { return print_fedora_logo (); }
+        case /Debian/i          { return print_debian_logo (); }
+        case /Ubuntu/i          { return print_ubuntu_logo (); }
+        case /LinuxMint/i       { return print_mint_logo (); }
+        case /Elementary OS/i   { return print_elementary_logo (); }
+        case /Arch/i            { return print_arch_logo (); }
+        case /SUSE|SLES|SLED/i  { return print_suse_logo (); }
     }
     
     return print_linux_logo ();
@@ -1053,6 +1083,7 @@ Actions:
 Options:
     --no-screenshot     Don't take a screenshot after printing system statistics
     --no-logo           Don't print the logo for your distribution
+    --output-dir DIR    Save the screenshot or report to DIR
 
 HELP
 }
@@ -1070,6 +1101,7 @@ sub print_report
 {
     use POSIX qw(strftime);
     
+    my $output_directory = shift or die 'Internal Error: ' . __LINE__ . "\n"; # Directory to which the report should be saved
     my $report_file; # File name for the output file
     my @report_actions; # File and programs to write to $report_file
     
@@ -1093,7 +1125,7 @@ sub print_report
     push (@report_actions, {type => 'file', file => PROC_CPUINFO});
     push (@report_actions, {type => 'directory', directory => '/etc', regex => '\w+-release'});
     
-    $report_file = $ENV{PWD} . '/' . 'stats_report_' . $ENV{USER} . '_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.log';
+    $report_file = $output_directory . '/' . 'stats_report_' . $ENV{USER} . '_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.log';
     open (REPORT_HANDLE, '>', $report_file) or die $report_file . ": $!\n";
     
     print REPORT_HANDLE STATS_NAME . ' ' . STATS_VERSION . "\n";
@@ -1216,24 +1248,46 @@ sub print_stats
     print colored ("Load Average:", "bold $color") . "                " . $load->{five} . "\n";
     print colored ("Top Process (by memory use):", "bold $color") . " " . $top . "\n\n" if ($top);
     
-    return $color;
+    # The easiest way to determine if we are running in a graphical environment
+    # without duplicating effort is based on the screen resolution.
+    # get_screen_resolution() will set both coordinates to zero if something
+    # goes wrong, but just to be safe we will return FALSE (we are not running
+    # in a graphical environment) if either is zero.
+    return 0 if ($res->{x} == 0 or $res->{y} == 0);
+    return 1;
 }
 
-# Take a screenshot and save it in the user's home directory.
+# Take a screenshot and save it in the specified directory.
 sub print_screenshot
 {
+    my $output_directory = shift or die 'Internal Error: ' . __LINE__ . "\n"; # Directory to which the screenshot should be saved
     my $color = shift; # Optional identifier color
+    my $screenshot_cmd; # Command to take the screenshot
     my $screenshot_file; # File the screenshot will be written to
     
-    if (system ('which import 1>/dev/null 2>&1') == 0)
+    # There are many utilities to take a screenshot of an X session. Therefore
+    # only a limited subset which are likely to be installed on target systems
+    # are supported by this script. In the event that more than one supported
+    # utility is installed, the one with the greatest preference will be
+    # selected.
+    if (system ('which scrot 1>/dev/null 2>&1') == 0)
+    {
+        $screenshot_cmd = 'scrot --silent';
+    }
+    elsif (system ('which import 1>/dev/null 2>&1') == 0)
+    {
+        $screenshot_cmd = 'import -window root';
+    }
+    
+    if ($screenshot_cmd)
     {
         use POSIX qw(strftime);
         
-        $screenshot_file = $ENV{PWD} . '/' . 'screenshot_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.png';
+        $screenshot_file = $output_directory . '/' . 'screenshot_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.png';
         
         print 'Screenshot being taken..... ' . ($color ? colored ('Smile!!', "bold $color") : 'Smile!!') . "\n";
         sleep (2); # Give the X server time to flush its buffers before the screenshot is taken.
-        if (system ("import -window root $screenshot_file") == 0)
+        if (system ($screenshot_cmd . ' ' . $screenshot_file) == 0)
         {
             print 'Screenshot saved as ' . $screenshot_file . "\n\n";
         }
@@ -1244,7 +1298,7 @@ sub print_screenshot
     }
     else
     {
-        print 'Screenshot cannot be taken..... ' . ($color ? colored ('import', "bold $color") : 'import') . " missing!\n\n";
+        print 'Screenshot cannot be taken..... ' . ($color ? colored ('scrot', "bold $color") : 'scrot') . " missing!\n\n";
     }
 }
 
@@ -1261,6 +1315,7 @@ my $p_version = 0;
 # Options
 my $p_screenshot = 1;
 my $p_logo = 1;
+my $p_output_directory = $ENV{PWD};
 
 # Parse our command-line arguments.
 if ($#ARGV >= 1)
@@ -1269,11 +1324,39 @@ if ($#ARGV >= 1)
     {
         switch ($_ = shift)
         {
-            case '--no-screenshot' { $p_screenshot = 0; }
-            case '--no-logo' { $p_logo = 0; }
-            else { die "Invalid OPTION: $_\n"; }
+            case '--no-screenshot'
+            {
+                $p_screenshot = 0;
+            }
+            case '--no-logo'
+            {
+                $p_logo = 0;
+            }
+            case /^--output-dir(=.+){0,1}$/
+            {
+                if (/--output-dir=/) { $p_output_directory = (/--output-dir=(.+)/)[0]; }
+                else { $p_output_directory = shift; }
+                
+                # Workaround: Since "~" is so commonly used to reference one's
+                # home directory, accept it by translating it into the HOME
+                # environment variable.
+                if ($p_output_directory =~ /^~/)
+                {
+                    $p_output_directory = ($p_output_directory =~ /^~(.*)/)[0];
+                    $p_output_directory = $ENV{HOME} . $p_output_directory;
+                }
+                
+                unless ($p_output_directory and -d $p_output_directory)
+                {
+                    die die "Invalid OUTPUT_DIRECTORY: $p_output_directory\n";
+                }
+            }
+            else
+            {
+                die "Invalid OPTION: $_\n";
+            }
         }
-    };
+    }
 }
 if ($#ARGV >= 0)
 {
@@ -1305,15 +1388,17 @@ elsif ($p_version)
 }
 elsif ($p_report)
 {
-    print_report ();
+    print_report ($p_output_directory);
 }
 elsif ($p_stats)
 {
     my $color = 'black'; # Primary color of distro's logo
+    my $is_graphical; # Is X running in the current context?
     
-    $color = print_logo () if ($p_logo == 1);
-    print_stats ($color);
-    print_screenshot ($color) if ($p_screenshot == 1);
+    if ($p_logo == 1) { $color = print_logo (); }
+    else { print "\n"; }
+    $is_graphical = print_stats ($color);
+    print_screenshot ($p_output_directory, $color) if ($p_screenshot == 1 and $is_graphical == 1);
 }
 
 exit 0;
