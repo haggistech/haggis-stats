@@ -1,0 +1,10 @@
+stats for Debian
+----------------
+
+Although upstream referrs to this program simply as "Stats" in most cases, the
+official INSTALL document recommends that it be installed using the less
+generic name "haggis-stats". This package takes that suggestion, so the program
+can be executed using the command "haggis-stats" and its manual can be viewed
+using the command "man haggis-stats", just like one would expect.
+
+ -- xorangekiller <xorangekiller@gmail.com>  Thu, 03 Oct 2013 17:23:24 -0400

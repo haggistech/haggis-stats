@@ -1,5 +1,12 @@
+stats (2.1.0-1) unstable; urgency=low
+
+  * New upstream release
+  * Default to scrot instead of import for screenshot capture
+
+ -- xorangekiller <xorangekiller@gmail.com>  Thu, 03 Oct 2013 17:15:13 -0400
+
 stats (2.0.0-1) unstable; urgency=low
 
   * Initial release
 
- -- Karl Lenz <xorangekiller@gmail.com>  Fri, 27 Sep 2013 02:15:46 -0400
+ -- xorangekiller <xorangekiller@gmail.com>  Fri, 27 Sep 2013 02:15:46 -0400
