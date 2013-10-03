@@ -1223,9 +1223,24 @@ sub print_stats
 sub print_screenshot
 {
     my $color = shift; # Optional identifier color
+    my $screenshot_cmd; # Command to take the screenshot
     my $screenshot_file; # File the screenshot will be written to
     
-    if (system ('which import 1>/dev/null 2>&1') == 0)
+    # There are many utilities to take a screenshot of an X session. Therefore
+    # only a limited subset which are likely to be installed on target systems
+    # are supported by this script. In the event that more than one supported
+    # utility is installed, the one with the greatest preference will be
+    # selected.
+    if (system ('which scrot 1>/dev/null 2>&1') == 0)
+    {
+        $screenshot_cmd = 'scrot --silent';
+    }
+    elsif (system ('which import 1>/dev/null 2>&1') == 0)
+    {
+        $screenshot_cmd = 'import -window root';
+    }
+    
+    if ($screenshot_cmd)
     {
         use POSIX qw(strftime);
         
@@ -1233,7 +1248,7 @@ sub print_screenshot
         
         print 'Screenshot being taken..... ' . ($color ? colored ('Smile!!', "bold $color") : 'Smile!!') . "\n";
         sleep (2); # Give the X server time to flush its buffers before the screenshot is taken.
-        if (system ("import -window root $screenshot_file") == 0)
+        if (system ($screenshot_cmd . ' ' . $screenshot_file) == 0)
         {
             print 'Screenshot saved as ' . $screenshot_file . "\n\n";
         }
@@ -1244,7 +1259,7 @@ sub print_screenshot
     }
     else
     {
-        print 'Screenshot cannot be taken..... ' . ($color ? colored ('import', "bold $color") : 'import') . " missing!\n\n";
+        print 'Screenshot cannot be taken..... ' . ($color ? colored ('scrot', "bold $color") : 'scrot') . " missing!\n\n";
     }
 }
 
