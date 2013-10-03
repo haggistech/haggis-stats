@@ -195,7 +195,7 @@ sub get_distro
                 # white-list the distros we know about. This regular expression
                 # probes for the subset of the distros print_logo() understands
                 # and we can reasonably reliably probe for.
-                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Arch|SUSE|SLED|SLES)/i)[0])
+                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES)/i)[0])
                 {
                     $distro = $tmp;
                     last;
@@ -918,6 +918,35 @@ MINT_LOGO
     return 'bright_green';
 }
 
+# Print the Elementary OS logo and return its primary color.
+sub print_elementary_logo
+{
+    print color 'white';
+    print <<'ELEMENTARY_LOGO';
+
+              .lOXWMMWXOl.
+          .lONMMWX0000XWMMNOl.
+        cXMM0l,:oOXWWNKxc,l0MMXc
+      :NMNl..dWMKo,..,oNMX. .lNMN:
+     OMWl  oWMK'       .NMN    lWMO
+    0MW'  0MMk          OMM.    'WM0
+   lMM:  kMMO          .WMO      dMMl
+   NMX  .MMM.         ;WM0      lMMMN
+   MMO  'MMW        .OMWo     .0MMWMM
+   NMX   NMM;     ;0MWx.    .xMMK.XMN
+   lMM:  ,WMWc.cOWMXl     ;OMMK; :MMl
+    0MW;';kMMMMMM0; ..,l0WMMO,  ,WM0
+     OMMMMMNOkNMMMMMMMMMXx:    oMMO
+      :NMMd.   .';:::,.     .lNMN:
+        :KMMKo,.        .,oKMMK:
+          .ckNMMWXK00KXWMMNkc.
+              .lkXWMMWXkl.
+
+ELEMENTARY_LOGO
+    print color 'reset';
+    return 'white';
+}
+
 # Print the Arch Linux logo and return its primary color.
 sub print_arch_logo
 {
@@ -1019,14 +1048,15 @@ sub print_logo
 {
     switch (get_distro ())
     {
-        case /Red\sHat|RHEL/    { return print_rhel_logo (); }
-        case 'CentOS'           { return print_centos_logo (); }
-        case 'Fedora'           { return print_fedora_logo (); }
-        case 'Debian'           { return print_debian_logo (); }
-        case 'Ubuntu'           { return print_ubuntu_logo (); }
-        case 'LinuxMint'        { return print_mint_logo (); }
-        case 'Arch'             { return print_arch_logo (); }
-        case /SUSE|SLES|SLED/   { return print_suse_logo (); }
+        case /Red\sHat|RHEL/i   { return print_rhel_logo (); }
+        case /CentOS/i          { return print_centos_logo (); }
+        case /Fedora/i          { return print_fedora_logo (); }
+        case /Debian/i          { return print_debian_logo (); }
+        case /Ubuntu/i          { return print_ubuntu_logo (); }
+        case /LinuxMint/i       { return print_mint_logo (); }
+        case /Elementary OS/i   { return print_elementary_logo (); }
+        case /Arch/i            { return print_arch_logo (); }
+        case /SUSE|SLES|SLED/i  { return print_suse_logo (); }
     }
     
     return print_linux_logo ();
