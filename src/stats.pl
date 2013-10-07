@@ -614,6 +614,7 @@ sub get_desktop_environment
         {
             case /kde|kubuntu/i { $desktop_environment->{session} = 'KDE'; }
             case /cinnamon/i { $desktop_environment->{session} = 'Cinnamon'; }
+            case /pantheon/i { $desktop_environment->{session} = 'Pantheon'; }
             case /unity/i { $desktop_environment->{session} = 'Unity'; }
             case /gnome|ubuntu[\-]{0,1}gnome/i { $desktop_environment->{session} = 'GNOME'; }
             case /lxde|lubuntu/i { $desktop_environment->{session} = 'LXDE'; }
@@ -647,6 +648,16 @@ sub get_desktop_environment
                         $desktop_environment->{session} = 'XFCE';
                         last;
                     }
+                    case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*cinnamon/
+                    {
+                        $desktop_environment->{session} = 'Cinnamon';
+                        last;
+                    }
+                    case /^\s*.+--session\s*=\s*pantheon/
+                    {
+                        $desktop_environment->{session} = 'Pantheon';
+                        last;
+                    }
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*unity-panel/
                     {
                         $desktop_environment->{session} = 'Unity';
@@ -660,11 +671,6 @@ sub get_desktop_environment
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*mate-panel/
                     {
                         $desktop_environment->{session} = 'MATE';
-                        last;
-                    }
-                    case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*cinnamon/
-                    {
-                        $desktop_environment->{session} = 'Cinnamon';
                         last;
                     }
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*openbox/
@@ -696,6 +702,28 @@ sub get_desktop_environment
             if (system ('which cinnamon 1>/dev/null 2>&1') == 0)
             {
                 $desktop_environment->{version} = ((qx[cinnamon --version])[0] =~ /\s+([0-9]+\.+[0-9]+\.+[0-9]+)\s+/)[0];
+            }
+        }
+        case /pantheon/i
+        {
+            # Unlike virtually every other desktop environment in existence,
+            # Pantheon does not have an easy way to determine its version using
+            # installed binaries (as of Pantheon 1.303, at least). Since
+            # Pantheon is developed specifically for Elementary OS, we will use
+            # APT to determine its upstream version (to work around this insane
+            # limitation).
+            
+            if (system ('which apt-cache 1>/dev/null 2>&1') == 0 and system ('apt-cache show pantheon-shell 1>/dev/null 2>&1') == 0)
+            {
+                my @pantheon_shell = qx[apt-cache show pantheon-shell 2>&1];
+                for (@pantheon_shell)
+                {
+                    if (/^\s*Version:\s+([0-9]+\.)+[0-9]+/)
+                    {
+                        $desktop_environment->{version} = (/Version:\s+(([0-9]+\.)+[0-9]+)/)[0];
+                        last;
+                    }
+                }
             }
         }
         case /unity/i
