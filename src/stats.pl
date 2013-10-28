@@ -737,7 +737,7 @@ sub get_desktop_environment
         {
             if (system ('which gnome-session 1>/dev/null 2>&1') == 0)
             {
-                $desktop_environment->{version} = ((qx[gnome-session --version])[0] =~ /\s+([0-9]+\.+[0-9]+\.+[0-9]+)\s+/)[0];
+                $desktop_environment->{version} = ((qx[gnome-session --version])[0] =~ /\s+(([0-9]+\.)+[0-9]+)\s+/)[0];
             }
         }
         case /lxde/i
