@@ -34,6 +34,7 @@ release.
     * Elementary OS             >= 0.2
     * Arch Linux
     * openSUSE                  >= 12.3
+    * Gentoo
 
 Dependencies
 ============
@@ -52,6 +53,7 @@ commands necessary to install the additional language dependencies.
     * Fedora            yum install perl-Switch
     * Arch Linux        pacman -S perl-switch
     * openSUSE          zypper install perl-Switch
+    * Gentoo            emerge perl-Switcher
 
     As mentioned in the "Supported Operating Systems" section above, the
 Linux Standard Base is also a requirement. The script will technically "run"
@@ -60,6 +62,14 @@ useful. Fortunately this is installed by default on virtually every modern
 Linux distribution and therefore not much of an issue. I mention this
 dependency explicitly because it is probably a good idea to depend on lsb-base
 and lsb-release if you are packaging Stats for your distribution.
+
+    Gentoo is particularly troublesome in this regard. Since Gentoo gives its
+users a much greater degree of freedom over package selection than most other
+distributions, it is likely that a number of packages required for Stats to
+exercise the full extent of its features are missing, even on a complete
+desktop installation. Running the installation command below as root will
+satisfy these dependencies.
+    # emerge perl-Switcher lsb_release xrandr xdpyinfo scrot
 
 Installation
 ============

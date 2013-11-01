@@ -48,11 +48,12 @@ use constant STATS_VERSION      => '2.1.0';
 use constant STATS_COPYRIGHT    => 'Copyright (c) 2012-2013 Haggis';
 use constant STATS_LICENSE      => 'BSD 3-Clause';
 
-use constant HOSTNAME_FILE  => '/etc/hostname';
-use constant PROC_UPTIME    => '/proc/uptime';
-use constant PROC_LOADAVG   => '/proc/loadavg';
-use constant PROC_MEMINFO   => '/proc/meminfo';
-use constant PROC_CPUINFO   => '/proc/cpuinfo';
+use constant HOSTNAME_FILE          => '/etc/hostname';
+use constant GENTOO_HOSTNAME_FILE   => '/etc/conf.d/hostname';
+use constant PROC_UPTIME            => '/proc/uptime';
+use constant PROC_LOADAVG           => '/proc/loadavg';
+use constant PROC_MEMINFO           => '/proc/meminfo';
+use constant PROC_CPUINFO           => '/proc/cpuinfo';
 
 ###############################################################################
 #                          Basic Utility Functions                            #
@@ -195,7 +196,7 @@ sub get_distro
                 # white-list the distros we know about. This regular expression
                 # probes for the subset of the distros print_logo() understands
                 # and we can reasonably reliably probe for.
-                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES)/i)[0])
+                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES|Gentoo)/i)[0])
                 {
                     $distro = $tmp;
                     last;
@@ -235,14 +236,24 @@ sub get_hostname
 {
     my $hostname; # System hostname
     
-    if (-r HOSTNAME_FILE)
+    if (-r HOSTNAME_FILE or -r GENTOO_HOSTNAME_FILE)
     {
+        my @hostname_array; # Array tied to the hostname file
+        my $hostname_file; # Hostname file itself
+        
+        if (-r HOSTNAME_FILE)
+        {
+            $hostname_file = HOSTNAME_FILE;
+        }
+        else
+        {
+            $hostname_file = GENTOO_HOSTNAME_FILE;
+        }
+        
         use Tie::File;
         use Fcntl 'O_RDONLY';
         
-        my @hostname_array; # Array tied to the hostname file
-        
-        tie (@hostname_array, 'Tie::File', HOSTNAME_FILE, mode => O_RDONLY) or die HOSTNAME_FILE . ": $!\n";
+        tie (@hostname_array, 'Tie::File', $hostname_file, mode => O_RDONLY) or die $hostname_file . ": $!\n";
         $hostname = $hostname_array[0];
         chomp ($hostname);
         untie (@hostname_array);
@@ -1037,6 +1048,36 @@ SUSE_LOGO
     return 'green';
 }
 
+# Print the Gentoo logo and return its primary color.
+sub print_gentoo_logo
+{
+    print color 'magenta';
+    print <<'GENTOO_LOGO';
+
+                ...
+          .:d0XNNNXKOo;.
+       .:ONMMMMMMMMWWNX0kl,
+      :KMMMMMMMMMMMWNNNXKKOko'
+     dWMMMMMMMMMMMXKOkOKKK00OOkc
+    l0MMMMMMMMMWKOddddc;KK00OOkO0o.
+    cx0XWMMMMMMMN0o,'clkKK00OOkkk0Nc
+     ;dxk0XNWMMMMMMWNNXXK00OOOkkxxXM:
+       .;lxk0NWMMMMWNNXKK00OOkkkx0WXl
+          ;KMMMMMMWNNXXK00OOOkkKWW0d.
+        :XMMMMMMWWNNXXKK00OOOXWWOd:
+      lNMMMMMMMWWNNXXKK000KNMXkl;
+    ,NMMMMMMMWWNNXXKK00KNWXOoc'
+   .WMMMMWWWWNNXXXKKXWWXkoc,.
+   'XMWWNNNNXXXXNNWXOdc:'.
+    c0WWWWWWWNX0koc:,..
+     ':looll::;;'..
+        .....
+
+GENTOO_LOGO
+    print color 'reset';
+    return 'magenta';
+}
+
 # Print the Linux logo and return its primary color.
 sub print_linux_logo
 {
@@ -1085,6 +1126,7 @@ sub print_logo
         case /Elementary OS/i   { return print_elementary_logo (); }
         case /Arch/i            { return print_arch_logo (); }
         case /SUSE|SLES|SLED/i  { return print_suse_logo (); }
+        case /Gentoo/i          { return print_gentoo_logo (); }
     }
     
     return print_linux_logo ();
@@ -1147,6 +1189,7 @@ sub print_report
     push (@report_actions, {type => 'environment', variable => 'HOME'});
     push (@report_actions, {type => 'environment', variable => 'USER'});
     push (@report_actions, {type => 'file', file => HOSTNAME_FILE});
+    push (@report_actions, {type => 'file', file => GENTOO_HOSTNAME_FILE});
     push (@report_actions, {type => 'file', file => PROC_UPTIME});
     push (@report_actions, {type => 'file', file => PROC_LOADAVG});
     push (@report_actions, {type => 'file', file => PROC_MEMINFO});
@@ -1300,7 +1343,14 @@ sub print_screenshot
     # selected.
     if (system ('which scrot 1>/dev/null 2>&1') == 0)
     {
-        $screenshot_cmd = 'scrot --silent';
+        if (grep (/--silent/, qx[scrot --help]))
+        {
+            $screenshot_cmd = 'scrot --silent';
+        }
+        else
+        {
+            $screenshot_cmd = 'scrot';
+        }
     }
     elsif (system ('which import 1>/dev/null 2>&1') == 0)
     {
