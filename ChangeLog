@@ -1,3 +1,12 @@
+stats (2.2.2) unstable; urgency=low
+
+    * New Feature: Added ability to pipe to file without coloring
+    * New Feature: Setting HAGGIS_STATS_SCREENSHOT_DIR variable will default the screenshot folder
+    * Cosmetic Change: made ram display as Used/Available instead of Available/Used
+    * Reduced max length of Top Process
+
+ -- haggis <haggistech@gmail.com>  Wed, 13 Oct 2014 18:41:13 -0000
+ 
 2013-10-03  xorangekiller  <xorangekiller@gmail.com>
 
     Version 2.1.0
