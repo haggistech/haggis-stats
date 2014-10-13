@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 #
 # Haggis Tech Linux Stats Script
-# Version:  2.1.0
-# Released: 03 October 2013
+# Version:  2.2.2
+# Released: 25 September 2014
 #
 # Copyright (c) 2012-2013, Haggis
 # Copyright (c) 2013, xorangekiller
@@ -44,16 +44,15 @@ use Term::ANSIColor;
 ###############################################################################
 
 use constant STATS_NAME         => 'Haggis Stats';
-use constant STATS_VERSION      => '2.1.0';
+use constant STATS_VERSION      => '2.2.2';
 use constant STATS_COPYRIGHT    => 'Copyright (c) 2012-2013 Haggis';
 use constant STATS_LICENSE      => 'BSD 3-Clause';
 
-use constant HOSTNAME_FILE          => '/etc/hostname';
-use constant GENTOO_HOSTNAME_FILE   => '/etc/conf.d/hostname';
-use constant PROC_UPTIME            => '/proc/uptime';
-use constant PROC_LOADAVG           => '/proc/loadavg';
-use constant PROC_MEMINFO           => '/proc/meminfo';
-use constant PROC_CPUINFO           => '/proc/cpuinfo';
+use constant HOSTNAME_FILE  => '/etc/hostname';
+use constant PROC_UPTIME    => '/proc/uptime';
+use constant PROC_LOADAVG   => '/proc/loadavg';
+use constant PROC_MEMINFO   => '/proc/meminfo';
+use constant PROC_CPUINFO   => '/proc/cpuinfo';
 
 ###############################################################################
 #                          Basic Utility Functions                            #
@@ -196,7 +195,7 @@ sub get_distro
                 # white-list the distros we know about. This regular expression
                 # probes for the subset of the distros print_logo() understands
                 # and we can reasonably reliably probe for.
-                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES|Gentoo)/i)[0])
+                if (my $tmp = ($line =~ /(Red\sHat|RHEL|CentOS|Fedora|Debian|Ubuntu|LinuxMint|Elementary OS|Arch|SUSE|SLED|SLES)/i)[0])
                 {
                     $distro = $tmp;
                     last;
@@ -236,24 +235,14 @@ sub get_hostname
 {
     my $hostname; # System hostname
     
-    if (-r HOSTNAME_FILE or -r GENTOO_HOSTNAME_FILE)
+    if (-r HOSTNAME_FILE)
     {
-        my @hostname_array; # Array tied to the hostname file
-        my $hostname_file; # Hostname file itself
-        
-        if (-r HOSTNAME_FILE)
-        {
-            $hostname_file = HOSTNAME_FILE;
-        }
-        else
-        {
-            $hostname_file = GENTOO_HOSTNAME_FILE;
-        }
-        
         use Tie::File;
         use Fcntl 'O_RDONLY';
         
-        tie (@hostname_array, 'Tie::File', $hostname_file, mode => O_RDONLY) or die $hostname_file . ": $!\n";
+        my @hostname_array; # Array tied to the hostname file
+        
+        tie (@hostname_array, 'Tie::File', HOSTNAME_FILE, mode => O_RDONLY) or die HOSTNAME_FILE . ": $!\n";
         $hostname = $hostname_array[0];
         chomp ($hostname);
         untie (@hostname_array);
@@ -625,7 +614,6 @@ sub get_desktop_environment
         {
             case /kde|kubuntu/i { $desktop_environment->{session} = 'KDE'; }
             case /cinnamon/i { $desktop_environment->{session} = 'Cinnamon'; }
-            case /pantheon/i { $desktop_environment->{session} = 'Pantheon'; }
             case /unity/i { $desktop_environment->{session} = 'Unity'; }
             case /gnome|ubuntu[\-]{0,1}gnome/i { $desktop_environment->{session} = 'GNOME'; }
             case /lxde|lubuntu/i { $desktop_environment->{session} = 'LXDE'; }
@@ -659,16 +647,6 @@ sub get_desktop_environment
                         $desktop_environment->{session} = 'XFCE';
                         last;
                     }
-                    case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*cinnamon/
-                    {
-                        $desktop_environment->{session} = 'Cinnamon';
-                        last;
-                    }
-                    case /^\s*.+--session\s*=\s*pantheon/
-                    {
-                        $desktop_environment->{session} = 'Pantheon';
-                        last;
-                    }
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*unity-panel/
                     {
                         $desktop_environment->{session} = 'Unity';
@@ -682,6 +660,11 @@ sub get_desktop_environment
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*mate-panel/
                     {
                         $desktop_environment->{session} = 'MATE';
+                        last;
+                    }
+                    case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*cinnamon/
+                    {
+                        $desktop_environment->{session} = 'Cinnamon';
                         last;
                     }
                     case /^\s*[A-Za-z0-9\/]{0,1}([A-Za-z0-9\-_]+\/)*openbox/
@@ -715,28 +698,6 @@ sub get_desktop_environment
                 $desktop_environment->{version} = ((qx[cinnamon --version])[0] =~ /\s+([0-9]+\.+[0-9]+\.+[0-9]+)\s+/)[0];
             }
         }
-        case /pantheon/i
-        {
-            # Unlike virtually every other desktop environment in existence,
-            # Pantheon does not have an easy way to determine its version using
-            # installed binaries (as of Pantheon 1.303, at least). Since
-            # Pantheon is developed specifically for Elementary OS, we will use
-            # APT to determine its upstream version (to work around this insane
-            # limitation).
-            
-            if (system ('which apt-cache 1>/dev/null 2>&1') == 0 and system ('apt-cache show pantheon-shell 1>/dev/null 2>&1') == 0)
-            {
-                my @pantheon_shell = qx[apt-cache show pantheon-shell 2>&1];
-                for (@pantheon_shell)
-                {
-                    if (/^\s*Version:\s+([0-9]+\.)+[0-9]+/)
-                    {
-                        $desktop_environment->{version} = (/Version:\s+(([0-9]+\.)+[0-9]+)/)[0];
-                        last;
-                    }
-                }
-            }
-        }
         case /unity/i
         {
             if (system ('which unity 1>/dev/null 2>&1') == 0)
@@ -748,7 +709,7 @@ sub get_desktop_environment
         {
             if (system ('which gnome-session 1>/dev/null 2>&1') == 0)
             {
-                $desktop_environment->{version} = ((qx[gnome-session --version])[0] =~ /\s+(([0-9]+\.)+[0-9]+)\s+/)[0];
+                $desktop_environment->{version} = ((qx[gnome-session --version])[0] =~ /\s+([0-9]+\.+[0-9]+\.+[0-9]+)\s+/)[0];
             }
         }
         case /lxde/i
@@ -1048,36 +1009,6 @@ SUSE_LOGO
     return 'green';
 }
 
-# Print the Gentoo logo and return its primary color.
-sub print_gentoo_logo
-{
-    print color 'magenta';
-    print <<'GENTOO_LOGO';
-
-                ...
-          .:d0XNNNXKOo;.
-       .:ONMMMMMMMMWWNX0kl,
-      :KMMMMMMMMMMMWNNNXKKOko'
-     dWMMMMMMMMMMMXKOkOKKK00OOkc
-    l0MMMMMMMMMWKOddddc;KK00OOkO0o.
-    cx0XWMMMMMMMN0o,'clkKK00OOkkk0Nc
-     ;dxk0XNWMMMMMMWNNXXK00OOOkkxxXM:
-       .;lxk0NWMMMMWNNXKK00OOkkkx0WXl
-          ;KMMMMMMWNNXXK00OOOkkKWW0d.
-        :XMMMMMMWWNNXXKK00OOOXWWOd:
-      lNMMMMMMMWWNNXXKK000KNMXkl;
-    ,NMMMMMMMWWNNXXKK00KNWXOoc'
-   .WMMMMWWWWNNXXXKKXWWXkoc,.
-   'XMWWNNNNXXXXNNWXOdc:'.
-    c0WWWWWWWNX0koc:,..
-     ':looll::;;'..
-        .....
-
-GENTOO_LOGO
-    print color 'reset';
-    return 'magenta';
-}
-
 # Print the Linux logo and return its primary color.
 sub print_linux_logo
 {
@@ -1126,7 +1057,6 @@ sub print_logo
         case /Elementary OS/i   { return print_elementary_logo (); }
         case /Arch/i            { return print_arch_logo (); }
         case /SUSE|SLES|SLED/i  { return print_suse_logo (); }
-        case /Gentoo/i          { return print_gentoo_logo (); }
     }
     
     return print_linux_logo ();
@@ -1189,7 +1119,6 @@ sub print_report
     push (@report_actions, {type => 'environment', variable => 'HOME'});
     push (@report_actions, {type => 'environment', variable => 'USER'});
     push (@report_actions, {type => 'file', file => HOSTNAME_FILE});
-    push (@report_actions, {type => 'file', file => GENTOO_HOSTNAME_FILE});
     push (@report_actions, {type => 'file', file => PROC_UPTIME});
     push (@report_actions, {type => 'file', file => PROC_LOADAVG});
     push (@report_actions, {type => 'file', file => PROC_MEMINFO});
@@ -1294,6 +1223,7 @@ sub print_report
 # Print system statistics.
 sub print_stats
 {
+
     my $color = shift; # Primary color of distro's logo
     my $release = get_release (); # Distribution release
     my $hostname = get_hostname (); # System hostname
@@ -1310,14 +1240,21 @@ sub print_stats
     print colored ("Hostname:", "bold $color") . "                    " . $hostname . "\n" if ($hostname);
     print colored ("Uptime:", "bold $color") . "                      " . fancy_time ($uptime, $color) . "\n";
     print colored ("CPU:", "bold $color") . "                         " . $cpu . "\n" unless ($cpu eq 'Unknown');
-    print colored ("RAM (total / used):", "bold $color") . "          " . fancy_round ($mem->{ram_total}) . colored ($mem->{ram_total_units}, "bold $color") . ' / ' . fancy_round ($mem->{ram_used}) . colored ($mem->{ram_used_units}, "bold $color") . "\n";
-    print colored ("Swap (total / used):", "bold $color") . "         " . fancy_round ($mem->{swap_total}) . colored ($mem->{swap_total_units}, "bold $color") . ' / ' . fancy_round ($mem->{swap_used}) . colored ($mem->{swap_used_units}, "bold $color") . "\n";
+    print colored ("RAM (used / total):", "bold $color") . "          " . fancy_round ($mem->{ram_used}) . colored ($mem->{ram_used_units}, "bold $color") . ' / ' . fancy_round ($mem->{ram_total}) . colored ($mem->{ram_total_units}, "bold $color") . "\n";
+    print colored ("Swap (used / total):", "bold $color") . "         " . fancy_round ($mem->{swap_used}) . colored ($mem->{swap_used_units}, "bold $color") . ' / ' . fancy_round ($mem->{swap_total}) . colored ($mem->{swap_total_units}, "bold $color") . "\n";
     print colored ("Desktop Environment:", "bold $color") . "         " . $de->{session} . ' ' . $de->{version} . "\n" unless ($de->{session} eq 'Unknown');
     print colored ("Logged in as:", "bold $color") . "                " . $ENV{USER} . "\n" if ($ENV{USER});
     print colored ("Kernel:", "bold $color") . "                      " . $kernel . "\n" unless ($kernel eq 'Unknown');
     print colored ("Resolution:", "bold $color") . "                  " . $res->{x} . colored (" x ", "bold $color") . $res->{y} . colored (" pixels", "bold $color") . "\n" unless ($res->{x} == 0);
     print colored ("Load Average:", "bold $color") . "                " . $load->{five} . "\n";
-    print colored ("Top Process (by memory use):", "bold $color") . " " . $top . "\n\n" if ($top);
+
+
+my $str = $top;
+my @fields = split / /, $str;
+my $top2 = $fields[0];
+   print colored ("Top Process (by memory use):", "bold $color") . " " . $top2 . "\n\n\n" if ($top2);
+
+
     
     # The easiest way to determine if we are running in a graphical environment
     # without duplicating effort is based on the screen resolution.
@@ -1328,9 +1265,58 @@ sub print_stats
     return 1;
 }
 
+
+sub print_nocolor
+{
+    my $color = shift; # Primary color of distro's logo
+    my $release = get_release (); # Distribution release
+    my $hostname = get_hostname (); # System hostname
+    my $uptime = get_system_uptime (); # Current system uptime
+    my $cpu = get_cpu_identifier (); # CPU identifier
+    my $mem = get_memory_usage (); # Current memory usage
+    my $de = get_desktop_environment (); # Current user's desktop environment
+    my $kernel = get_kernel_release (); # Kernel release
+    my $res = get_screen_resolution (); # Screen resolution
+    my $load = get_load_average (); # Load average
+    my $top = get_top_mem (); # Top process by memory usage
+
+
+    print "OS:" . "                          " . $release . "\n" if ($release);
+    print "Hostname:" . "                    " . $hostname . "\n" if ($hostname);
+    print "Uptime:" . "                      " . fancy_time ($uptime) . "\n";
+    print "CPU:" . "                         " . $cpu . "\n" unless ($cpu eq 'Unknown');
+    print "RAM (used / total):" . "          " . fancy_round ($mem->{ram_used}) . $mem->{ram_used_units} . ' / ' . fancy_round ($mem->{ram_total}) . $mem->{ram_total_units} . "\n";
+    print "Swap (used / total):" . "         " . fancy_round ($mem->{swap_used}) . $mem->{swap_used_units} . ' / ' . fancy_round ($mem->{swap_total}) . $mem->{swap_total_units} . "\n";
+    print "Desktop Environment:" . "         " . $de->{session} . ' ' . $de->{version} . "\n" unless ($de->{session} eq 'Unknown');
+    print "Logged in as:" . "                " . $ENV{USER} . "\n" if ($ENV{USER});
+    print "Kernel:" . "                      " . $kernel . "\n" unless ($kernel eq 'Unknown');
+    print "Resolution:" . "                  " . $res->{x} . " x " . $res->{y} . " pixels" . "\n" unless ($res->{x} == 0);
+    print "Load Average:" . "                " . $load->{five} . "\n";
+    print "\n";
+    print "Top Process (by memory use):" . " " . $top . "\n\n" if ($top);
+
+    
+    # The easiest way to determine if we are running in a graphical environment
+    # without duplicating effort is based on the screen resolution.
+    # get_screen_resolution() will set both coordinates to zero if something
+    # goes wrong, but just to be safe we will return FALSE (we are not running
+    # in a graphical environment) if either is zero.
+    return 0 if ($res->{x} == 0 or $res->{y} == 0);
+    return 1;
+}
+
+
+
+
 # Take a screenshot and save it in the specified directory.
 sub print_screenshot
 {
+  #my $output_directory = $ENV{HAGGIS_STATS_SCREENSHOT_DIR}; 
+
+#print $output_directory . "\n";
+
+
+
     my $output_directory = shift or die 'Internal Error: ' . __LINE__ . "\n"; # Directory to which the screenshot should be saved
     my $color = shift; # Optional identifier color
     my $screenshot_cmd; # Command to take the screenshot
@@ -1343,14 +1329,7 @@ sub print_screenshot
     # selected.
     if (system ('which scrot 1>/dev/null 2>&1') == 0)
     {
-        if (grep (/--silent/, qx[scrot --help]))
-        {
-            $screenshot_cmd = 'scrot --silent';
-        }
-        else
-        {
-            $screenshot_cmd = 'scrot';
-        }
+        $screenshot_cmd = 'scrot --silent';
     }
     elsif (system ('which import 1>/dev/null 2>&1') == 0)
     {
@@ -1360,8 +1339,9 @@ sub print_screenshot
     if ($screenshot_cmd)
     {
         use POSIX qw(strftime);
-        
+        my $screenshot_file;
         $screenshot_file = $output_directory . '/' . 'screenshot_' . strftime ("%Y%m%d.%H%M%S", localtime) . '.png';
+
         
         print 'Screenshot being taken..... ' . ($color ? colored ('Smile!!', "bold $color") : 'Smile!!') . "\n";
         sleep (2); # Give the X server time to flush its buffers before the screenshot is taken.
@@ -1389,11 +1369,25 @@ my $p_stats = 0;
 my $p_report = 0;
 my $p_help = 0;
 my $p_version = 0;
+my $p_nocolor = 0;
+my $nocolor;
+my $p_file;
 
 # Options
 my $p_screenshot = 1;
 my $p_logo = 1;
-my $p_output_directory = $ENV{PWD};
+
+
+my $p_output_directory = $ENV{HAGGIS_STATS_SCREENSHOT_DIR};
+
+if (defined $p_output_directory) {
+$p_output_directory = $ENV{HAGGIS_STATS_SCREENSHOT_DIR};
+} else {
+$p_output_directory = $ENV{PWD};
+}
+
+#my $p_output_directory = $ENV{PWD};
+#my $p_output_directory = $ENV{HAGGIS_STATS_SCREENSHOT_DIR};
 
 # Parse our command-line arguments.
 if ($#ARGV >= 1)
@@ -1410,6 +1404,13 @@ if ($#ARGV >= 1)
             {
                 $p_logo = 0;
             }
+            case '--output-file'
+            {
+                $p_logo = 0;
+                $p_screenshot = 0;
+		$nocolor= 1;
+            }
+
             case /^--output-dir(=.+){0,1}$/
             {
                 if (/--output-dir=/) { $p_output_directory = (/--output-dir=(.+)/)[0]; }
@@ -1452,6 +1453,7 @@ if ($#ARGV >= 0)
 }
 else
 {
+
     $p_stats = 1;
 }
 
@@ -1467,6 +1469,10 @@ elsif ($p_version)
 elsif ($p_report)
 {
     print_report ($p_output_directory);
+}
+elsif (!-t STDOUT) {
+
+    print_nocolor ($p_output_directory);
 }
 elsif ($p_stats)
 {
