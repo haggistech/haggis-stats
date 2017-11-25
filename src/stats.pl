@@ -58,6 +58,9 @@ use constant PROC_CPUINFO   => '/proc/cpuinfo';
 #                          Basic Utility Functions                            #
 ###############################################################################
 
+# Clear Screen
+system 'clear';
+
 # Return the input time as a rationally formatted string.
 sub fancy_time
 {
@@ -1281,19 +1284,19 @@ sub print_nocolor
     my $top = get_top_mem (); # Top process by memory usage
 
 
-    print "OS:" . "                          " . $release . "\n" if ($release);
-    print "Hostname:" . "                    " . $hostname . "\n" if ($hostname);
-    print "Uptime:" . "                      " . fancy_time ($uptime) . "\n";
-    print "CPU:" . "                         " . $cpu . "\n" unless ($cpu eq 'Unknown');
-    print "RAM (used / total):" . "          " . fancy_round ($mem->{ram_used}) . $mem->{ram_used_units} . ' / ' . fancy_round ($mem->{ram_total}) . $mem->{ram_total_units} . "\n";
-    print "Swap (used / total):" . "         " . fancy_round ($mem->{swap_used}) . $mem->{swap_used_units} . ' / ' . fancy_round ($mem->{swap_total}) . $mem->{swap_total_units} . "\n";
-    print "Desktop Environment:" . "         " . $de->{session} . ' ' . $de->{version} . "\n" unless ($de->{session} eq 'Unknown');
-    print "Logged in as:" . "                " . $ENV{USER} . "\n" if ($ENV{USER});
-    print "Kernel:" . "                      " . $kernel . "\n" unless ($kernel eq 'Unknown');
-    print "Resolution:" . "                  " . $res->{x} . " x " . $res->{y} . " pixels" . "\n" unless ($res->{x} == 0);
-    print "Load Average:" . "                " . $load->{five} . "\n";
+    print "    OS:" . "                          " . $release . "\n" if ($release);
+    print "    Hostname:" . "                    " . $hostname . "\n" if ($hostname);
+    print "    Uptime:" . "                      " . fancy_time ($uptime) . "\n";
+    print "    CPU:" . "                         " . $cpu . "\n" unless ($cpu eq 'Unknown');
+    print "    RAM (used / total):" . "          " . fancy_round ($mem->{ram_used}) . $mem->{ram_used_units} . ' / ' . fancy_round ($mem->{ram_total}) . $mem->{ram_total_units} . "\n";
+    print "    Swap (used / total):" . "         " . fancy_round ($mem->{swap_used}) . $mem->{swap_used_units} . ' / ' . fancy_round ($mem->{swap_total}) . $mem->{swap_total_units} . "\n";
+    print "    Desktop Environment:" . "         " . $de->{session} . ' ' . $de->{version} . "\n" unless ($de->{session} eq 'Unknown');
+    print "    Logged in as:" . "                " . $ENV{USER} . "\n" if ($ENV{USER});
+    print "    Kernel:" . "                      " . $kernel . "\n" unless ($kernel eq 'Unknown');
+    print "    Resolution:" . "                  " . $res->{x} . " x " . $res->{y} . " pixels" . "\n" unless ($res->{x} == 0);
+    print "    Load Average:" . "                " . $load->{five} . "\n";
     print "\n";
-    print "Top Process (by memory use):" . " " . $top . "\n\n" if ($top);
+    print "    Top Process (by memory use):" . " " . $top . "\n\n" if ($top);
 
     
     # The easiest way to determine if we are running in a graphical environment
